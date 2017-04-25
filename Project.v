@@ -11,17 +11,12 @@ output VGA_VS;
 output VGA_CLK;
 output VGA_SYNC_N;
 output VGA_BLANK_N;
-
 input [35:0] GPIO;
-wire outputlvds, outclock, testlvds;
 output [17:0] LEDR;
+
 assign LEDR[0] = GPIO[0];
-
-
-/*Test test(.rx_in(GPIO[0]),
-	.rx_inclock(clock),
-	.rx_out(outputlvds),
-	.rx_outclock(outclock));*/
+assign LEDR[1] = GPIO[4];
+assign LEDR[2] = GPIO[14];
 
 reg [7:0] red;
 reg [7:0] green;
