@@ -1,5 +1,5 @@
 module Project(CLOCK_50, KEY, VGA_R, VGA_G, VGA_B, VGA_HS, VGA_VS, VGA_CLK, VGA_SYNC_N, VGA_BLANK_N,
-	GPIO, LEDR, LEDG);
+	GPIO, LEDR, LEDG, SW);
 
 input CLOCK_50;
 input [3:0] KEY;
@@ -14,6 +14,7 @@ output VGA_BLANK_N;
 input [35:0] GPIO;
 output [17:0] LEDR;
 output [8:0] LEDG;
+input [17:0] SW;
 
 assign LEDG[0] = GPIO[0];
 assign LEDG[1] = GPIO[4];
@@ -39,7 +40,7 @@ assign VGA_BLANK_N = hsync & vsync;
 
 wire [11:0] display_col;
 wire [10:0] display_row;
-wire [15:0] address;
+reg [15:0] address;
 wire visible;
 
 reg [14:0] pixel = 0;
@@ -56,11 +57,17 @@ reg [2:0] comparator;
 
 display_ram ram (.rdclock(clock), .wrclock(input_hsync), .data(comparator), .rdaddress(address), .wraddress(write_address), .wren(1'b1), .q(out));
 
-assign address = {display_col[7:0], display_row[7:0]};
+//assign address = {display_col[7:0], display_row[7:0]};
 
 always @(posedge clock) begin
-	write_address = address;
-	comparator = {GPIO[14], GPIO[4], GPIO[0]};
+	if (display_col < 256 && display_row < 256) begin
+		address = {display_col[7:0], display_row[7:0]};
+		write_address = address;
+		comparator = {GPIO[14], GPIO[4], GPIO[0]};
+	end else begin
+		write_address = 0;
+		comparator = 3'b000;
+	end
 end
 
 always @(posedge clock or posedge reset) begin
@@ -89,9 +96,9 @@ end
 
 always @(posedge clock) begin
 	if (visible) begin
-		red = {pixel[14:10], 3'b000};
-		green = {pixel[9:5], 3'b000};
-		blue = {pixel[4:0], 3'b000};
+		if (SW[2] == 0) begin red = {pixel[14:10], 3'b000}; end else begin red = 0; end
+		if (SW[1] == 0) begin green = {pixel[9:5], 3'b000}; end else begin green = 0; end
+		if (SW[0] == 0) begin blue = {pixel[4:0], 3'b000}; end else begin blue = 0; end
 	end else begin
 		red = 0;
 		green = 0;
