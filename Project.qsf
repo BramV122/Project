@@ -458,7 +458,6 @@ set_location_assignment PIN_AE12 -to FL_WP_N
 set_location_assignment PIN_Y1 -to FL_RY
 set_location_assignment PIN_AB22 -to GPIO[0]
 set_location_assignment PIN_AC15 -to GPIO[1]
-set_location_assignment PIN_AB21 -to GPIO[2]
 set_location_assignment PIN_Y17 -to GPIO[3]
 set_location_assignment PIN_AC21 -to GPIO[4]
 set_location_assignment PIN_Y16 -to GPIO[5]
@@ -473,11 +472,9 @@ set_location_assignment PIN_AF15 -to GPIO[13]
 set_location_assignment PIN_AF24 -to GPIO[14]
 set_location_assignment PIN_AE21 -to GPIO[15]
 set_location_assignment PIN_AF25 -to GPIO[16]
-set_location_assignment PIN_AC22 -to GPIO[17]
 set_location_assignment PIN_AE22 -to GPIO[18]
 set_location_assignment PIN_AF21 -to GPIO[19]
 set_location_assignment PIN_AF22 -to GPIO[20]
-set_location_assignment PIN_AD22 -to GPIO[21]
 set_location_assignment PIN_AG25 -to GPIO[22]
 set_location_assignment PIN_AD25 -to GPIO[23]
 set_location_assignment PIN_AH25 -to GPIO[24]
@@ -581,4 +578,8 @@ set_location_assignment PIN_H14 -to EXT_IO[3]
 set_location_assignment PIN_F14 -to EXT_IO[4]
 set_location_assignment PIN_E10 -to EXT_IO[5]
 set_location_assignment PIN_D9 -to EXT_IO[6]
+set_instance_assignment -name IO_STANDARD LVDS -to GPIO[0]
+set_location_assignment PIN_AB21 -to "GPIO[0](n)"
+set_global_assignment -name QIP_FILE Test.qip
+set_instance_assignment -name IO_STANDARD LVDS -to "GPIO[0](n)"
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

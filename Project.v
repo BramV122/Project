@@ -1,4 +1,5 @@
-module Project(CLOCK_50, KEY, VGA_R, VGA_G, VGA_B, VGA_HS, VGA_VS, VGA_CLK, VGA_SYNC_N, VGA_BLANK_N);
+module Project(CLOCK_50, KEY, VGA_R, VGA_G, VGA_B, VGA_HS, VGA_VS, VGA_CLK, VGA_SYNC_N, VGA_BLANK_N,
+	GPIO, LEDR);
 
 input CLOCK_50;
 input [3:0] KEY;
@@ -10,6 +11,17 @@ output VGA_VS;
 output VGA_CLK;
 output VGA_SYNC_N;
 output VGA_BLANK_N;
+
+input [35:0] GPIO;
+wire outputlvds, outclock, testlvds;
+output [17:0] LEDR;
+assign LEDR[0] = GPIO[0];
+
+
+/*Test test(.rx_in(GPIO[0]),
+	.rx_inclock(clock),
+	.rx_out(outputlvds),
+	.rx_outclock(outclock));*/
 
 reg [7:0] red;
 reg [7:0] green;
