@@ -1,5 +1,5 @@
 module Project(CLOCK_50, KEY, VGA_R, VGA_G, VGA_B, VGA_HS, VGA_VS, VGA_CLK, VGA_SYNC_N, VGA_BLANK_N,
-	GPIO, LEDR);
+	GPIO, LEDR, LEDG);
 
 input CLOCK_50;
 input [3:0] KEY;
@@ -13,10 +13,13 @@ output VGA_SYNC_N;
 output VGA_BLANK_N;
 input [35:0] GPIO;
 output [17:0] LEDR;
+output [8:0] LEDG;
 
-assign LEDR[0] = GPIO[0];
-assign LEDR[1] = GPIO[4];
-assign LEDR[2] = GPIO[14];
+assign LEDG[0] = GPIO[0];
+assign LEDG[1] = GPIO[4];
+assign LEDG[2] = GPIO[14];
+
+assign LEDR[14:0] = pixel;
 
 reg [7:0] red;
 reg [7:0] green;
@@ -37,14 +40,52 @@ assign VGA_BLANK_N = hsync & vsync;
 wire [11:0] display_col;
 wire [10:0] display_row;
 wire [15:0] address;
-wire [14:0] pixel;
 wire visible;
+
+reg [14:0] pixel = 0;
+assign input_hsync = GPIO[1];
+assign input_vsync = GPIO[3];
 
 VGA_Controller controller (.clock(clock), .reset(reset), .display_col(display_col), .display_row(display_row), .visible(visible), .hsync(hsync), .vsync(vsync));
 
-BlockRam blockram (.address(address), .clock(clock), .data(1'b0), .wren(1'b0), .q(pixel));
+//BlockRam blockram (.address(address), .clock(clock), .data(1'b0), .wren(1'b0), .q(pixel));
+
+wire [2:0] out;
+reg [15:0] write_address;
+reg [2:0] comparator;
+
+display_ram ram (.rdclock(clock), .wrclock(input_hsync), .data(comparator), .rdaddress(address), .wraddress(write_address), .wren(1'b1), .q(out));
 
 assign address = {display_col[7:0], display_row[7:0]};
+
+always @(posedge clock) begin
+	write_address = address;
+	comparator = {GPIO[14], GPIO[4], GPIO[0]};
+end
+
+always @(posedge clock or posedge reset) begin
+	if (reset) begin
+		pixel = 0;
+	end else begin
+		if (visible) begin
+			if (out[0]) begin
+				if (pixel[14:10] < 5'b11111) pixel[14:10] = pixel[14:10] + 1;
+			end else begin
+				if (pixel[14:10] > 5'b00000) pixel[14:10] = pixel[14:10] - 1;
+			end
+			if (out[1]) begin
+				if (pixel[9:5] < 5'b11111) pixel[9:5] = pixel[9:5] + 1;
+			end else begin
+				if (pixel[9:5] > 5'b00000)pixel[9:5] = pixel[9:5] - 1;
+			end
+			if (out[2]) begin
+				if (pixel[4:0] < 5'b11111) pixel[4:0] = pixel[4:0] + 1;
+			end else begin
+				if (pixel[4:0] > 5'b00000)pixel[4:0] = pixel[4:0] - 1;
+			end
+		end
+	end
+end
 
 always @(posedge clock) begin
 	if (visible) begin
