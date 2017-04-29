@@ -1,4 +1,4 @@
-module VGA_Controller(clock, reset, display_col, display_row, visible, hsync, vsync);
+module VGA_Controller(clock, reset, display_col, display_row, visible, hsync, vsync, refresh);
 
 //72 Hz 800 x 600 VGA - 50MHz clock 
   parameter HOR_FIELD    =  799; 
@@ -12,6 +12,7 @@ module VGA_Controller(clock, reset, display_col, display_row, visible, hsync, vs
   
   input clock; 
   input reset;                   // reset signal 
+  input refresh;						// reset display_col en display_row
   output reg [11:0] display_col; // horizontal counter 
   output reg [10:0] display_row; // vertical counter 
   output visible;                // signal visible on display 
@@ -19,8 +20,8 @@ module VGA_Controller(clock, reset, display_col, display_row, visible, hsync, vs
 
   assign visible = !(display_row > VER_FIELD || display_col > HOR_FIELD);
   
-  always @(posedge clock) begin
-		if (reset) begin
+  always @(posedge clock or posedge reset or posedge refresh) begin
+		if (reset || refresh) begin
 			display_row = 0;
 			display_col = 0;
 		end else begin
