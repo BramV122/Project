@@ -79,8 +79,8 @@ always @(posedge clock) begin
 	end
 end
 
-always @(posedge clock or posedge reset) begin
-	if (reset) begin
+always @(posedge clock or posedge reset or posedge refresh) begin
+	if (reset || refresh) begin
 		pixel = 0;
 	end else begin
 		if (visible && (display_col < 256 && display_row < 256)) begin
