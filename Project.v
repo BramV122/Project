@@ -32,11 +32,11 @@ assign reset = ~KEY[0];
 assign VGA_R = red;
 assign VGA_B = blue;
 assign VGA_G = green;
-assign VGA_HS = hsync;
-assign VGA_VS = vsync;
+assign VGA_HS = input_hsync;
+assign VGA_VS = input_vsync;
 assign VGA_CLK = clock;
 assign VGA_SYNC_N = 1'b0;
-assign VGA_BLANK_N = hsync & vsync;
+assign VGA_BLANK_N = input_hsync & input_vsync;
 
 wire [11:0] display_col;
 wire [10:0] display_row;
@@ -104,7 +104,7 @@ always @(posedge clock or posedge reset or posedge refresh) begin
 end
 
 always @(posedge clock) begin
-	if (visible && (display_col < 256 && display_row < 256)) begin
+	if (visible && (display_col < 256 && display_row < 256))begin
 		if (SW[2] == 0) begin red = {pixel[14:10], 3'b000}; end else begin red = 0; end
 		if (SW[1] == 0) begin green = {pixel[9:5], 3'b000}; end else begin green = 0; end
 		if (SW[0] == 0) begin blue = {pixel[4:0], 3'b000}; end else begin blue = 0; end
