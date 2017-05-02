@@ -26,7 +26,6 @@ reg [7:0] red;
 reg [7:0] green;
 reg [7:0] blue;
 
-//assign clock = CLOCK_50;
 assign reset = ~KEY[0];
 
 assign VGA_R = red;
@@ -65,13 +64,6 @@ reg wren;
 
 assign address = {display_col[7:0], display_row[7:0]};
 
-/*always @(posedge clock or negedge input_hsync or negedge input_vsync) begin
-	refresh = 0;
-	if (!input_hsync) begin
-		if (!input_vsync) begin refresh = 1; end
-	end
-end*/
-
 /*always @(posedge clock) begin
 	if (display_col < 256 && display_row < 256) begin
 		wren = 1;
@@ -87,11 +79,11 @@ always @(posedge clock) begin
 	out = comparator;
 end
 
-//always @(posedge clock or posedge reset /*or posedge refresh*/) begin
-//	if (reset /*|| refresh*/) begin
+//always @(posedge clock or posedge reset ) begin
+//	if (reset) begin
 //		pixel = 0;
 //	end else begin
-//		if (visible /*&& (display_col < 256 && display_row < 256)*/) begin
+//		if (visible) begin
 //			if (out[0]) begin
 //				if (pixel[14:10] < 5'b11111) pixel[14:10] = pixel[14:10] + 1;
 //			end else begin
@@ -112,7 +104,7 @@ end
 //end
 
 always @(posedge clock) begin
-	if (visible /*&& (display_col < 256 && display_row < 256)*/)begin
+	if (visible)begin
 		if (SW[2] == 0) begin red = {pixel[14:10], 3'b000}; end else begin red = 0; end
 		if (SW[1] == 0) begin green = {pixel[9:5], 3'b000}; end else begin green = 0; end
 		if (SW[0] == 0) begin blue = {pixel[4:0], 3'b000}; end else begin blue = 0; end
