@@ -42,18 +42,18 @@ wire [10:0] display_row;
 wire [15:0] address;
 wire visible;
 
-wire [14:0] pixel;
-assign input_hsync = ~GPIO[1];
-assign input_vsync = ~GPIO[3];
+reg [14:0] pixel;
+assign input_hsync = SW[17] ? ~GPIO[1] : GPIO[1];
+assign input_vsync = SW[16] ? ~GPIO[3] : GPIO[3];
 
 reg refresh;
 wire clock;
 
 PLL pll (.inclk0(CLOCK_50), .c0(clock));
 
-VGA_Controller controller (.clock(clock), .reset(reset), .display_col(display_col), .display_row(display_row), .visible(visible), .refresh(refresh), .hsync(input_hsync), .vsync(input_vsync));
+VGA_Controller controller (.clock(clock), .reset(reset), .display_col(display_col), .display_row(display_row), .visible(visible), .hsync(input_hsync), .vsync(input_vsync));
 
-BlockRam blockram (.address(address), .clock(clock), .data(1'b0), .wren(1'b0), .q(pixel));
+//BlockRam blockram (.address(address), .clock(clock), .data(1'b0), .wren(1'b0), .q(pixel));
 
 reg [2:0] out;
 reg [15:0] write_address;
@@ -79,32 +79,32 @@ always @(posedge clock) begin
 	out = comparator;
 end
 
-//always @(posedge clock or posedge reset ) begin
-//	if (reset) begin
-//		pixel = 0;
-//	end else begin
-//		if (visible) begin
-//			if (out[0]) begin
-//				if (pixel[14:10] < 5'b11111) pixel[14:10] = pixel[14:10] + 1;
-//			end else begin
-//				if (pixel[14:10] > 5'b00000) pixel[14:10] = pixel[14:10] - 1;
-//			end
-//			if (out[1]) begin
-//				if (pixel[9:5] < 5'b11111) pixel[9:5] = pixel[9:5] + 1;
-//			end else begin
-//				if (pixel[9:5] > 5'b00000)pixel[9:5] = pixel[9:5] - 1;
-//			end
-//			if (out[2]) begin
-//				if (pixel[4:0] < 5'b11111) pixel[4:0] = pixel[4:0] + 1;
-//			end else begin
-//				if (pixel[4:0] > 5'b00000)pixel[4:0] = pixel[4:0] - 1;
-//			end
-//		end
-//	end
-//end
+always @(posedge clock or posedge reset ) begin
+	if (reset) begin
+		pixel = 0;
+	end else begin
+		if (visible) begin
+			if (out[0]) begin
+				if (pixel[14:10] < 5'b11111) pixel[14:10] = pixel[14:10] + 1;
+			end else begin
+				if (pixel[14:10] > 5'b00000) pixel[14:10] = pixel[14:10] - 1;
+			end
+			if (out[1]) begin
+				if (pixel[9:5] < 5'b11111) pixel[9:5] = pixel[9:5] + 1;
+			end else begin
+				if (pixel[9:5] > 5'b00000)pixel[9:5] = pixel[9:5] - 1;
+			end
+			if (out[2]) begin
+				if (pixel[4:0] < 5'b11111) pixel[4:0] = pixel[4:0] + 1;
+			end else begin
+				if (pixel[4:0] > 5'b00000)pixel[4:0] = pixel[4:0] - 1;
+			end
+		end
+	end
+end
 
 always @(posedge clock) begin
-	if (visible)begin
+	if (visible) begin
 		if (SW[2] == 0) begin red = {pixel[14:10], 3'b000}; end else begin red = 0; end
 		if (SW[1] == 0) begin green = {pixel[9:5], 3'b000}; end else begin green = 0; end
 		if (SW[0] == 0) begin blue = {pixel[4:0], 3'b000}; end else begin blue = 0; end
