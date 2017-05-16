@@ -60,9 +60,11 @@ reg [15:0] write_address;
 reg [2:0] comparator;
 reg wren;
 
+Display_Ram display_ram (.clock(clock), .data(pixel2), .rdaddress(address), .wraddress(address), .wren(1'b1), .q(pixel));
+
 //display_ram ram (.rdclock(clock), .wrclock(clock), .data(comparator), .rdaddress(address), .wraddress(write_address), .wren(wren), .q(out));
 
-assign address = {display_col[7:0], display_row[7:0]};
+assign address = {display_row[8:0], display_col[9:0]};
 
 /*always @(posedge clock) begin
 	if (display_col < 256 && display_row < 256) begin
@@ -79,26 +81,24 @@ always @(posedge clock) begin
 	out = comparator;
 end
 
-always @(posedge clock or posedge reset ) begin
-	if (reset) begin
-		pixel = 0;
-	end else begin
-		if (visible) begin
-			if (out[0]) begin
-				if (pixel[14:10] < 5'b11111) pixel[14:10] = pixel[14:10] + 1;
-			end else begin
-				if (pixel[14:10] > 5'b00000) pixel[14:10] = pixel[14:10] - 1;
-			end
-			if (out[1]) begin
-				if (pixel[9:5] < 5'b11111) pixel[9:5] = pixel[9:5] + 1;
-			end else begin
-				if (pixel[9:5] > 5'b00000) pixel[9:5] = pixel[9:5] - 1;
-			end
-			if (out[2]) begin
-				if (pixel[4:0] < 5'b11111) pixel[4:0] = pixel[4:0] + 1;
-			end else begin
-				if (pixel[4:0] > 5'b00000) pixel[4:0] = pixel[4:0] - 1;
-			end
+reg [14:0] pixel2;
+
+always @(posedge clock) begin
+	if (visible) begin
+		if (out[0]) begin
+			if (pixel[14:10] < 5'b11111) pixel2[14:10] = pixel[14:10] + 1;
+		end else begin
+			if (pixel[14:10] > 5'b00000) pixel2[14:10] = pixel[14:10] - 1;
+		end
+		if (out[1]) begin
+			if (pixel[9:5] < 5'b11111) pixel2[9:5] = pixel[9:5] + 1;
+		end else begin
+			if (pixel[9:5] > 5'b00000) pixel2[9:5] = pixel[9:5] - 1;
+		end
+		if (out[2]) begin
+			if (pixel[4:0] < 5'b11111) pixel2[4:0] = pixel[4:0] + 1;
+		end else begin
+			if (pixel[4:0] > 5'b00000) pixel2[4:0] = pixel[4:0] - 1;
 		end
 	end
 end
