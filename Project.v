@@ -92,12 +92,12 @@ always @(posedge clock or posedge reset ) begin
 			if (out[1]) begin
 				if (pixel[9:5] < 5'b11111) pixel[9:5] = pixel[9:5] + 1;
 			end else begin
-				if (pixel[9:5] > 5'b00000)pixel[9:5] = pixel[9:5] - 1;
+				if (pixel[9:5] > 5'b00000) pixel[9:5] = pixel[9:5] - 1;
 			end
 			if (out[2]) begin
 				if (pixel[4:0] < 5'b11111) pixel[4:0] = pixel[4:0] + 1;
 			end else begin
-				if (pixel[4:0] > 5'b00000)pixel[4:0] = pixel[4:0] - 1;
+				if (pixel[4:0] > 5'b00000) pixel[4:0] = pixel[4:0] - 1;
 			end
 		end
 	end

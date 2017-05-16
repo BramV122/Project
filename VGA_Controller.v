@@ -12,59 +12,72 @@ module VGA_Controller(clock, reset, display_col, display_row, visible, hsync, vs
 
 	// Horizontal timing
 	parameter HOR_Visible_Area = 800;
-	parameter HOR_Front_porch = 40;
-	parameter HOR_Sync_pulse = 128;
-	parameter HOR_Back_porch = 88;
+	parameter HOR_Front_porch = 40; //40
+	parameter HOR_Sync_pulse = 128; //128
+	parameter HOR_Back_porch = 88; //88
 	parameter HOR_TOTAL = 1056;
 
 	// Vertical timing
 	parameter VER_Visible_Area = 600;
-	parameter VER_Front_porch = 1;
-	parameter VER_Sync_pulse = 4;
+	parameter VER_Front_porch = 4; // 1
+	parameter VER_Sync_pulse = 1; // 4
 	parameter VER_Back_porch = 23;
-	parameter VER_TOTAL = 627;
+	parameter VER_TOTAL = 628;
   
   input clock; 
   input reset;                   // reset signal 
   output reg [11:0] display_col; // horizontal counter 
   output reg [10:0] display_row; // vertical counter 
-  output visible;           	   // signal visible on display 
+  output reg visible;           	   // signal visible on display 
   input hsync, vsync;
 
-  assign visible = !(display_row > (VER_TOTAL - VER_Back_porch - VER_Sync_pulse) || display_col > (HOR_TOTAL - HOR_Back_porch - HOR_Sync_pulse) || display_col < HOR_Front_porch || display_row < VER_Front_porch);
-  
+  //assign visible = !(display_row > (VER_Visible_Area) || display_col > (HOR_Visible_Area/*HOR_TOTAL - HOR_Back_porch - HOR_Sync_pulse*/) || display_col < HOR_Front_porch || display_row < VER_Front_porch);
+  always @(display_col or display_row) begin
+		if(display_col > HOR_Front_porch && display_col < (HOR_Visible_Area + HOR_Front_porch)) begin
+			visible = 1;
+		end else if (display_row > VER_Front_porch && display_row < (VER_Visible_Area + VER_Front_porch)) begin
+			visible = 1;
+		end else begin
+			visible = 0;
+		end
+  end
   reg previous_hsync;
   reg previous_vsync;
 
   
   always @(posedge clock or posedge reset) begin
 		if (reset) begin
-			display_row = 1;
-			display_col = 1;
+			display_row = 0;
+			display_col = 0;
 		end else begin
-			if (display_col < HOR_TOTAL) begin
-				display_col = display_col + 1;
-			end else begin
-				display_col = 1;
-				if (display_row < VER_TOTAL) begin
-					display_row = display_row + 1;
-				end else begin
-					display_row = 1;
-				end
-			end
 			if (previous_hsync != hsync && hsync == 1) begin
-				display_col = 1;
+				display_col = 0;
 				previous_hsync = hsync;
 			end else begin
 				previous_hsync = hsync;
+				incrementColRow;
 			end
 			if (previous_vsync != vsync && vsync == 1) begin
-				display_row = 1;
+				//display_row = 0;
 				previous_vsync = vsync;
 			end else begin
 				previous_vsync = vsync;
+				incrementColRow;
 			end
 		end
   end
 
+task incrementColRow;
+			if (display_col < HOR_TOTAL) begin
+				display_col = display_col + 1;
+			end else begin
+				display_col = 0;
+				/*if (display_row < VER_TOTAL) begin
+					display_row = display_row + 1;
+				end else begin
+					display_row = 0;
+				end*/
+			end
+endtask
+  
 endmodule 
