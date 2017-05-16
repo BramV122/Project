@@ -52,32 +52,22 @@ module VGA_Controller(clock, reset, display_col, display_row, visible, hsync, vs
 		end else begin
 			if (previous_hsync != hsync && hsync == 1) begin
 				display_col = 0;
-				previous_hsync = hsync;
-			end else begin
-				previous_hsync = hsync;
-				incrementColRow;
-			end
-			if (previous_vsync != vsync && vsync == 1) begin
-				//display_row = 0;
-				previous_vsync = vsync;
-			end else begin
-				previous_vsync = vsync;
-				incrementColRow;
-			end
-		end
-  end
-
-task incrementColRow;
-			if (display_col < HOR_TOTAL) begin
+				display_row = display_row < VER_TOTAL ? (display_row + 1) : 0;
+			end else if(display_col < HOR_TOTAL) begin
 				display_col = display_col + 1;
 			end else begin
 				display_col = 0;
-				/*if (display_row < VER_TOTAL) begin
-					display_row = display_row + 1;
-				end else begin
-					display_row = 0;
-				end*/
+				display_row = display_row < VER_TOTAL ? (display_row + 1) : 0; 
 			end
-endtask
+			/*if (previous_hsync != hsync && hsync == 1) begin
+				display_col = 0;
+			end*/
+			/*if (previous_vsync != vsync && vsync == 1) begin
+				display_row = display_row < VER_TOTAL ? (display_row + 1) : 0;
+			end*/
+			previous_hsync = hsync;
+			previous_vsync = vsync;
+		end
+  end
   
 endmodule 
