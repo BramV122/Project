@@ -41,6 +41,7 @@ wire [11:0] display_col;
 wire [10:0] display_row;
 wire [15:0] address;
 wire visible;
+reg shifttimer, shifthsync, hsync_shifted, during_shift_timer, startShiftTimer;
 
 reg [14:0] pixel;
 assign input_hsync = SW[17] ? ~GPIO[1] : GPIO[1];
@@ -49,6 +50,25 @@ assign input_vsync = SW[16] ? ~GPIO[3] : GPIO[3];
 reg refresh;
 wire clock;
 
+/*always @(posedge input_hsync) begin
+	startShiftTimer = 1;
+end
+
+always @(posedge clock) begin
+	if(startShiftTimer && shifttimer < 40) begin
+		shifttimer = shifttimer + 1;
+	end else begin
+		if(during_shift_timer < 1056) begin
+			hsync_shifted = 1;
+		end else begin
+			hsync_shifted = 0;
+			during_shift_timer = 0;
+			startShiftTimer = 0;
+			shifttimer = 0;
+		end
+	end
+end
+*/
 PLL pll (.inclk0(CLOCK_50), .c0(clock));
 
 VGA_Controller controller (.clock(clock), .reset(reset), .display_col(display_col), .display_row(display_row), .visible(visible), .hsync(input_hsync), .vsync(input_vsync));
