@@ -39,7 +39,6 @@ assign VGA_BLANK_N = input_hsync & input_vsync;
 
 wire [11:0] display_col;
 wire [10:0] display_row;
-wire [15:0] address;
 wire visible;
 reg shifttimer, shifthsync, hsync_shifted, during_shift_timer, startShiftTimer;
 
@@ -73,8 +72,34 @@ PLL pll (.inclk0(CLOCK_50), .c0(clock));
 
 VGA_Controller controller (.clock(clock), .reset(reset), .display_col(display_col), .display_row(display_row), .visible(visible), .hsync(input_hsync), .vsync(input_vsync));
 
-//BlockRam blockram (.address(address), .clock(clock), .data(1'b0), .wren(1'b0), .q(pixel));
+wire [11:0] bramout;
+reg [11:0] bramin;
+reg [17:0] bramaddress;
+reg bramwrite = 1'b0;
 
+BlockRam blockram (.address(bramaddress), .clock(clock), .data(bramin), .wren(bramwrite), .q(bramout));
+
+integer counter;
+reg [7:0] adrstart, adrstop;
+
+/*always @(posedge clock) begin
+	if(counter == 9) begin
+		counter = 0;
+		if(bramaddress == 47999) begin
+			bramaddress = 0;
+		end else begin
+			bramaddress = bramaddress + 1;
+		end
+		bramin = {bramin, red, green, blue}; 
+		bramwrite = 1;
+	end else begin
+		counter = counter + 1;
+		bramwrite = 0;
+		bramin = {bramin, red, green, blue}; 
+	end
+end
+
+*/
 reg [2:0] out;
 reg [15:0] write_address;
 reg [2:0] comparator;
@@ -125,9 +150,28 @@ end
 
 always @(posedge clock) begin
 	if (visible) begin
-		if (SW[2] == 0) begin red = {pixel[14:10], 3'b000}; end else begin red = 0; end
-		if (SW[1] == 0) begin green = {pixel[9:5], 3'b000}; end else begin green = 0; end
-		if (SW[0] == 0) begin blue = {pixel[4:0], 3'b000}; end else begin blue = 0; end
+		case(SW[2:0])
+			3'b001 : begin 
+					red = {pixel[14:10], 1'b0};
+					green = {pixel[9:5], 1'b0};
+					blue = {pixel[4:0], 1'b0};
+					end
+			3'b010 : begin 
+					red = {pixel[14:10], 2'b00};
+					green = {pixel[9:5], 2'b00};
+					blue = {pixel[4:0], 2'b00};
+					end
+			3'b100 : begin 
+					red = {pixel[14:10], 3'b000};
+					green = {pixel[9:5], 3'b000};
+					blue = {pixel[4:0], 3'b000};
+					end
+			default : begin 
+					red = pixel[14:10];
+					green = pixel[9:5];
+					blue = pixel[4:0];
+					end
+		endcase
 	end else begin
 		red = 0;
 		green = 0;
