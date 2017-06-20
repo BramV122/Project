@@ -91,14 +91,19 @@ always @(posedge clock) begin
 	
 	if(vsynccounter > 1) begin
 		display_row = 0;
-		display_col = 1;
+		if(hsync == 0) begin
+			display_col = 0;
+		end else begin
+			display_col = 1;
+		end
 	end else if(hsynccounter > 1) begin
 		display_col = 1;
-		if(hsynccounter == 2) begin
-			display_row = display_row + 1;
-		end
 	end else begin
 		display_col = display_col + 1;
+	end
+	
+	if(display_col == 929) begin
+		display_row = display_row + 1;
 	end
 	previous_hsync = hsync;
 	previous_vsync = vsync;
