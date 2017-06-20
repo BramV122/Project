@@ -68,6 +68,18 @@ always @(posedge clock) begin
 	end
 end
 */
+
+always @(posedge clock) begin
+	if(display_row == 1 && display_row == 1) begin
+		bramaddress = 0;
+	end else if(display_col[0] == 1'b0 && visible == 1'b1) begin
+		bramaddress = bramaddress + 1;
+		bramwrite = 1;
+	end else begin
+		bramwrite = 0;
+	end
+end
+
 PLL pll (.inclk0(CLOCK_50), .c0(clock));
 
 VGA_Controller controller (.clock(clock), .reset(reset), .display_col(display_col), .display_row(display_row), .visible(visible), .hsync(input_hsync), .vsync(input_vsync));

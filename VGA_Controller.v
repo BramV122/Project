@@ -34,20 +34,10 @@ module VGA_Controller(clock, reset, display_col, display_row, visible, hsync, vs
   reg previous_hsync;
   reg previous_vsync;
 
-  //assign visible = !(display_row > (VER_Visible_Area) || display_col > (HOR_Visible_Area/*HOR_TOTAL - HOR_Back_porch - HOR_Sync_pulse*/) || display_col < HOR_Front_porch || display_row < VER_Front_porch);
-  /*always @(display_col or display_row) begin
-		if(display_col > HOR_Front_porch && display_col < (HOR_Visible_Area + HOR_Front_porch)) begin
-			visible = 1;
-		end else if (display_row > VER_Front_porch && display_row < (VER_Visible_Area + VER_Front_porch)) begin
-			visible = 1;
-		end else begin
-			visible = 0;
-		end
-  end*/
+
   always @(display_col or display_row) begin
-		if(display_col > HOR_Front_porch && display_col < (HOR_Visible_Area + HOR_Front_porch)) begin
-			visible = 1;
-		end else if (display_row > VER_Front_porch && display_row < (VER_Visible_Area + VER_Front_porch)) begin
+		if(display_col > HOR_Front_porch && display_col < (HOR_Visible_Area + HOR_Front_porch) && 
+		   display_row > VER_Front_porch && display_row < (VER_Visible_Area + VER_Front_porch)) begin
 			visible = 1;
 		end else begin
 			visible = 0;
@@ -55,7 +45,7 @@ module VGA_Controller(clock, reset, display_col, display_row, visible, hsync, vs
   end
 
 
-  
+  /*
   always @(posedge clock or posedge reset) begin
 		if (reset) begin
 			display_row = 0;
@@ -67,6 +57,9 @@ module VGA_Controller(clock, reset, display_col, display_row, visible, hsync, vs
 				display_row = display_row + 1;
 			end else if(previous_vsync != vsync && vsync == 1) begin
 				display_row = 1;
+			end else if((previous_vsync != vsync && vsync == 1) && (previous_hsync != hsync && hsync == 1)) begin
+				display_row = 1;
+				display_col = 1;
 			end else begin
 				display_col = display_col + 1;
 			end
@@ -75,10 +68,42 @@ module VGA_Controller(clock, reset, display_col, display_row, visible, hsync, vs
 			end*/
 			/*if (previous_vsync != vsync && vsync == 1) begin
 				display_row = display_row < VER_TOTAL ? (display_row + 1) : 0;
-			end*/
+			end
 			previous_hsync = hsync;
 			previous_vsync = vsync;
 		end
-  end
+  end*/
+
+integer vsynccounter, hsynccounter;
+
+always @(posedge clock) begin
+	if(vsync == 0) begin
+		vsynccounter = vsynccounter + 1;
+	end else if (vsync == 1) begin
+		vsynccounter = 0;
+	end
+	
+	if(hsync == 0) begin
+		hsynccounter = hsynccounter + 1;
+	end else if (hsync == 1) begin
+		hsynccounter = 0;
+	end
+	
+	if(vsynccounter > 1) begin
+		display_row = 0;
+		display_col = 0;
+	end else if(hsynccounter > 1) begin
+		display_col = 0;
+		if(hsynccounter == 2) begin
+			display_row = display_row + 1;
+		end
+	end else begin
+		display_col = display_col + 1;
+	end
+	previous_hsync = hsync;
+	previous_vsync = vsync;
+end
+
+
   
 endmodule 
