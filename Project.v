@@ -122,18 +122,18 @@ reg [2:0] comparator;
 reg wren;
 
 //display_ram ram (.rdclock(clock), .wrclock(clock), .data(comparator), .rdaddress(address), .wraddress(write_address), .wren(wren), .q(out));
-
+//
 //assign address = {display_col[7:0], display_row[7:0]};
-
-/*always @(posedge clock) begin
-	if (display_col < 256 && display_row < 256) begin
-		wren = 1;
-		write_address = address + 1;
-		comparator = {GPIO[14], GPIO[4], GPIO[0]};
-	end else begin
-		wren = 0;
-	end
-end*/
+//
+//always @(posedge clock) begin
+//	if (display_col < 256 && display_row < 256) begin
+//		wren = 1;
+//		write_address = address + 1;
+//		comparator = {GPIO[14], GPIO[4], GPIO[0]};
+//	end else begin
+//		wren = 0;
+//	end
+//end
 
 always @(posedge clock) begin
 	comparator = {GPIO[14], GPIO[4], GPIO[0]};
