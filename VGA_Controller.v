@@ -35,7 +35,7 @@ module VGA_Controller(clock, reset, display_col, display_row, visible, hsync, vs
   reg previous_vsync;
 
 
-  always @(display_col or display_row) begin
+  always @(posedge clock) begin
 		if(display_col > HOR_Front_porch && display_col < (HOR_Visible_Area + HOR_Front_porch) && 
 		   display_row > VER_Front_porch && display_row < (VER_Visible_Area + VER_Front_porch)) begin
 			visible = 1;
@@ -91,9 +91,9 @@ always @(posedge clock) begin
 	
 	if(vsynccounter > 1) begin
 		display_row = 0;
-		display_col = 0;
+		display_col = 1;
 	end else if(hsynccounter > 1) begin
-		display_col = 0;
+		display_col = 1;
 		if(hsynccounter == 2) begin
 			display_row = display_row + 1;
 		end
