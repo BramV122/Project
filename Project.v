@@ -70,15 +70,17 @@ end
 */
 
 always @(posedge clock) begin
-	if(display_row == 1 && display_row == 1) begin
+	if(input_vsync == 0) begin
 		bramaddress = 0;
-	end else if(display_col[0] == 1'b0 && visible == 1'b1) begin
+	end else if(display_col[0] == 1'b1 && visible == 1'b1 && display_col < 840 && display_row < 601) begin
 		bramaddress = bramaddress + 1;
 		bramwrite = 1;
 	end else begin
 		bramwrite = 0;
 	end
 end
+
+//assign bramin = {red[7:4], green[7:4], blue[7:4]};
 
 PLL pll (.inclk0(CLOCK_50), .c0(clock));
 
@@ -89,7 +91,9 @@ reg [11:0] bramin;
 reg [17:0] bramaddress;
 reg bramwrite = 1'b0;
 
-BlockRam blockram (.address(bramaddress), .clock(clock), .data(bramin), .wren(bramwrite), .q(bramout));
+//BlockRam blockram (.address(bramaddress), .clock(clock), .data(bramin), .wren(bramwrite), .q(bramout));
+
+Bram2 blockram (.rdaddress(bramaddress-1), .clock(clock), .data(bramin), .wren(bramwrite), .q(bramout), .wraddress(bramaddress));
 
 integer counter;
 reg [7:0] adrstart, adrstop;
@@ -119,7 +123,7 @@ reg wren;
 
 //display_ram ram (.rdclock(clock), .wrclock(clock), .data(comparator), .rdaddress(address), .wraddress(write_address), .wren(wren), .q(out));
 
-assign address = {display_col[7:0], display_row[7:0]};
+//assign address = {display_col[7:0], display_row[7:0]};
 
 /*always @(posedge clock) begin
 	if (display_col < 256 && display_row < 256) begin
@@ -136,29 +140,69 @@ always @(posedge clock) begin
 	out = comparator;
 end
 
-always @(posedge clock or posedge reset ) begin
+always @(posedge clock or posedge reset) begin
 	if (reset) begin
 		pixel = 0;
 	end else begin
 		if (visible) begin
-			if (out[0]) begin
-				if (pixel[14:10] < 5'b11111) pixel[14:10] = pixel[14:10] + 1;
+			if(SW[3]) begin	
+				if (out[0]) begin
+					if (pixel[14:10] < 5'b11111) pixel[14:10] = pixel[14:10] + 1;
+				end else begin
+					if (pixel[14:10] > 5'b00000) pixel[14:10] = pixel[14:10] - 1;
+				end
+				if (out[1]) begin
+					if (pixel[9:5] < 5'b11111) pixel[9:5] = pixel[9:5] + 1;
+				end else begin
+					if (pixel[9:5] > 5'b00000) pixel[9:5] = pixel[9:5] - 1;
+				end
+				if (out[2]) begin
+					if (pixel[4:0] < 5'b11111) pixel[4:0] = pixel[4:0] + 1;
+				end else begin
+					if (pixel[4:0] > 5'b00000) pixel[4:0] = pixel[4:0] - 1;
+				end
 			end else begin
-				if (pixel[14:10] > 5'b00000) pixel[14:10] = pixel[14:10] - 1;
-			end
-			if (out[1]) begin
-				if (pixel[9:5] < 5'b11111) pixel[9:5] = pixel[9:5] + 1;
-			end else begin
-				if (pixel[9:5] > 5'b00000) pixel[9:5] = pixel[9:5] - 1;
-			end
-			if (out[2]) begin
-				if (pixel[4:0] < 5'b11111) pixel[4:0] = pixel[4:0] + 1;
-			end else begin
-				if (pixel[4:0] > 5'b00000) pixel[4:0] = pixel[4:0] - 1;
+				if(display_col[0] == 1'b0) begin
+					pixel[14:10] = {bramout[11:8], 1'b0};
+					pixel[9:5] = {bramout[7:4], 1'b0};
+					pixel[4:0] = {bramout[3:0], 1'b0};
+					if (out[0]) begin
+						if (bramout[11:8] < 4'b1111) bramin[11:8] = bramout[11:8] + 1;
+					end else begin
+						if (bramout[11:8] > 4'b0000) bramin[11:8] = bramout[11:8] - 1;
+					end
+					if (out[1]) begin
+						if (bramout[7:4] < 4'b1111) bramin[7:4] = bramout[7:4] + 1;
+					end else begin
+						if (bramout[7:4] > 4'b0000) bramin[7:4] = bramout[7:4] - 1;
+					end
+					if (out[2]) begin
+						if (bramout[3:0] < 4'b1111) bramin[3:0] = bramout[3:0] + 1;
+					end else begin
+						if (bramout[3:0] > 4'b0000) bramin[3:0] = bramout[3:0] - 1;
+					end
+				end else begin
+					if (out[0]) begin
+						if (pixel[14:10] < 5'b11111) pixel[14:10] = pixel[14:10] + 1;
+					end else begin
+						if (pixel[14:10] > 5'b00000) pixel[14:10] = pixel[14:10] - 1;
+					end
+					if (out[1]) begin
+						if (pixel[9:5] < 5'b11111) pixel[9:5] = pixel[9:5] + 1;
+					end else begin
+						if (pixel[9:5] > 5'b00000) pixel[9:5] = pixel[9:5] - 1;
+					end
+					if (out[2]) begin
+						if (pixel[4:0] < 5'b11111) pixel[4:0] = pixel[4:0] + 1;
+					end else begin
+						if (pixel[4:0] > 5'b00000) pixel[4:0] = pixel[4:0] - 1;
+					end
+				end
 			end
 		end
 	end
 end
+
 
 always @(posedge clock) begin
 	if (visible) begin
