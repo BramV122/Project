@@ -143,6 +143,7 @@ always @(posedge clock) begin
 	out = comparator;
 end
 
+
 always @(posedge clock or posedge reset) begin
 	if (reset) begin
 		pixel = 0;
