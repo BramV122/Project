@@ -72,7 +72,10 @@ end
 always @(posedge clock) begin
 	if(input_vsync == 0) begin
 		bramaddress = 0;
-	end else if(display_col[0] == 1'b1 && visible == 1'b1 && display_col < 840 && display_row < 601) begin
+	/*end else if(display_col[0] == 1'b1 && visible == 1'b1 && display_col < 840 && display_row < 600) begin
+		bramaddress = bramaddress + 1;
+		bramwrite = 1;*/
+	end else if (visible && display_col[0] == 1'b0) begin
 		bramaddress = bramaddress + 1;
 		bramwrite = 1;
 	end else begin
@@ -88,12 +91,12 @@ VGA_Controller controller (.clock(clock), .reset(reset), .display_col(display_co
 
 wire [11:0] bramout;
 reg [11:0] bramin;
-reg [17:0] bramaddress;
+reg [20:0] bramaddress;
 reg bramwrite = 1'b0;
 
 //BlockRam blockram (.address(bramaddress), .clock(clock), .data(bramin), .wren(bramwrite), .q(bramout));
 
-Bram2 blockram (.rdaddress(bramaddress-1), .clock(clock), .data(bramin), .wren(bramwrite), .q(bramout), .wraddress(bramaddress));
+Bram2 blockram (.rdaddress(bramaddress), .clock(clock), .data(bramin), .wren(bramwrite), .q(bramout), .wraddress(bramaddress - 1));
 
 integer counter;
 reg [7:0] adrstart, adrstop;
